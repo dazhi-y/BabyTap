@@ -1,0 +1,13 @@
+.DS_Store
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+app/data/
+app/tmp/
+app/.native/
+experiments/key-probe/build/
+experiments/key-probe/sdkconfig
+experiments/key-probe/sdkconfig.old
+infra/config/

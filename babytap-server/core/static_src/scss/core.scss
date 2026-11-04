@@ -1,0 +1,14 @@
+#view-core\:child {
+    .child-photo {
+        max-width: 150px;
+    }
+}
+
+@include media-breakpoint-up(md) {
+    #view-core\:child {
+        .child-detail-column {
+            position: fixed;
+            width: 100%;
+        }
+    }
+}

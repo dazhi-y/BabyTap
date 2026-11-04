@@ -1,0 +1,48 @@
+
+.icon-add:before { content: '\e800'; } /* '' */
+.icon-camera:before { content: '\e801'; } /* '' */
+.icon-chat:before { content: '\e802'; } /* '' */
+.icon-delete:before { content: '\e803'; } /* '' */
+.icon-mail:before { content: '\e804'; } /* '' */
+.icon-false:before { content: '\e805'; } /* '' */
+.icon-graph:before { content: '\e806'; } /* '' */
+.icon-list:before { content: '\e807'; } /* '' */
+.icon-lock:before { content: '\e808'; } /* '' */
+.icon-refresh:before { content: '\e809'; } /* '' */
+.icon-stop:before { content: '\e80a'; } /* '' */
+.icon-timer:before { content: '\e80b'; } /* '' */
+.icon-true:before { content: '\e80c'; } /* '' */
+.icon-update:before { content: '\e80d'; } /* '' */
+.icon-user:before { content: '\e80e'; } /* '' */
+.icon-clock:before { content: '\e80f'; } /* '' */
+.icon-calendar:before { content: '\e810'; } /* '' */
+.icon-arrow-up:before { content: '\e811'; } /* '' */
+.icon-arrow-down:before { content: '\e812'; } /* '' */
+.icon-cancel:before { content: '\e813'; } /* '' */
+.icon-head-circumference:before { content: '\e814'; } /* '' */
+.icon-measurements:before { content: '\e815'; } /* '' */
+.icon-tag:before { content: '\e816'; } /* '' */
+.icon-height:before { content: '\f044'; } /* '' */
+.icon-dashboard:before { content: '\f0e4'; } /* '' */
+.icon-medication:before { content: '\f0fa'; } /* '' */
+.icon-angle-double-left:before { content: '\f100'; } /* '' */
+.icon-angle-double-right:before { content: '\f101'; } /* '' */
+.icon-angle-left:before { content: '\f104'; } /* '' */
+.icon-angle-right:before { content: '\f105'; } /* '' */
+.icon-tummytime:before { content: '\f118'; } /* '' */
+.icon-sad:before { content: '\f119'; } /* '' */
+.icon-source:before { content: '\f126'; } /* '' */
+.icon-angle-circled-left:before { content: '\f137'; } /* '' */
+.icon-angle-circled-right:before { content: '\f138'; } /* '' */
+.icon-child:before { content: '\f1ae'; } /* '' */
+.icon-feeding:before { content: '\f1b1'; } /* '' */
+.icon-activities:before { content: '\f1b3'; } /* '' */
+.icon-timeline:before { content: '\f1da'; } /* '' */
+.icon-diaperchange:before { content: '\f1f8'; } /* '' */
+.icon-sleep:before { content: '\f236'; } /* '' */
+.icon-note:before { content: '\f249'; } /* '' */
+.icon-weight:before { content: '\f24e'; } /* '' */
+.icon-today:before { content: '\f274'; } /* '' */
+.icon-bmi:before { content: '\f295'; } /* '' */
+.icon-temperature:before { content: '\f2c8'; } /* '' */
+.icon-pumping:before { content: '\f4a7'; } /* '' */

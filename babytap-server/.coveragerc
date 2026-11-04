@@ -1,0 +1,19 @@
+[run]
+omit =
+    */migrations/*
+    babybuddy/management/*
+    babybuddy/settings/*
+    babybuddy/wsgi.py
+source =
+    api
+    babybuddy
+    core
+    dashboard
+    reports
+parallel = true
+concurrency = multiprocessing
+data_file = data/.coverage
+relative_files = True
+
+[html]
+directory = htmlcov

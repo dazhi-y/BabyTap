@@ -1,0 +1,19 @@
+services:
+  babytap-server:
+    build:
+      context: ../../babytap-server
+    container_name: babytap-server
+    environment:
+      DJANGO_SETTINGS_MODULE: babybuddy.settings.base
+      SECRET_KEY: "${SECRET_KEY:?Set SECRET_KEY in infra/.env}"
+      ALLOWED_HOSTS: "${ALLOWED_HOSTS:-127.0.0.1,localhost}"
+    volumes:
+      - babytap-data:/app/data
+      - babytap-media:/app/media
+    ports:
+      - "127.0.0.1:${BABYTAP_SERVER_PORT:-8000}:8000"
+    restart: unless-stopped
+
+volumes:
+  babytap-data:
+  babytap-media:

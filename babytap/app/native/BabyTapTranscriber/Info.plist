@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>CFBundleExecutable</key><string>BabyTapTranscriber</string>
+  <key>CFBundleIdentifier</key><string>local.babytap.transcriber</string>
+  <key>CFBundleName</key><string>BabyTap 语音识别</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleShortVersionString</key><string>1.0</string>
+  <key>CFBundleVersion</key><string>1</string>
+  <key>LSBackgroundOnly</key><true/>
+  <key>NSSpeechRecognitionUsageDescription</key><string>BabyTap 使用系统语音识别，将 EasyInput 键盘麦克风录音转换为育儿记录文字。</string>
+</dict></plist>

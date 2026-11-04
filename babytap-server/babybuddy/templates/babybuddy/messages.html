@@ -1,0 +1,31 @@
+{% load i18n %}
+{% block messages %}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert{% if message.tags %} alert-{{ message.tags }}{% endif %} alert-dismissible fade show"
+                 role="alert">
+                {{ message }}
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    {% if form %}
+        {% if form.non_field_errors %}
+            {% for error in form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">
+                    <strong>{% blocktrans %}Error{% endblocktrans %}</strong>: {{ error }}
+                </div>
+            {% endfor %}
+        {% elif form.errors %}
+            <div class="alert alert-danger" role="alert">
+                <strong>{% blocktrans %}Error{% endblocktrans %}</strong>:
+                {% blocktrans trimmed %}
+                    Some fields have errors. See below for details.
+                {% endblocktrans %}
+            </div>
+        {% endif %}
+    {% endif %}
+{% endblock %}

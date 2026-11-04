@@ -1,0 +1,948 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f0edf7">
+  <title>BabyTap 宝宝记录台</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Avenir Next", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #f0edf7;
+      color: #2b2936;
+      --night: #f0edf7;
+      --night-soft: #514573;
+      --paper: rgba(255, 255, 255, .78);
+      --ink: #2b2936;
+      --ink-soft: #696476;
+      --line: rgba(75, 61, 102, .13);
+      --coral-soft: #fff0e8;
+      --teal-soft: #e8f7f1;
+      --amber-soft: #fff7d8;
+      --blue: #6f60b8;
+      --blue-soft: #e9f1ff;
+      --red-soft: #fbe9e8;
+      --copper: #7b68c4;
+      --event-breastfeeding: #c8bcf1;
+      --event-bottle: #f3c8b7;
+      --event-solid-food: #ded2f5;
+      --event-diaper: #b9dfd2;
+      --event-sleep: #bed5ee;
+      --shadow: 0 22px 64px rgba(76, 61, 111, .13);
+    }
+    * { box-sizing: border-box; }
+    html { min-width: 320px; min-height: 100%; }
+    body { position: relative; margin: 0; min-height: 100svh; background: radial-gradient(circle at 4% 0%, rgba(255, 202, 181, .72) 0, transparent 27%), radial-gradient(circle at 96% 100%, rgba(184, 228, 210, .72) 0, transparent 29%), radial-gradient(circle at 76% 8%, rgba(199, 186, 244, .52) 0, transparent 25%), var(--night); }
+    body::before { content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .46; background: linear-gradient(135deg, rgba(255,255,255,.44), transparent 48%); }
+    button, input { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+    .app-shell { position: relative; width: min(1360px, calc(100% - clamp(16px, 3.4vw, 48px))); margin: 0 auto; padding: clamp(14px, 4vh, 38px) 0 clamp(20px, 5vh, 64px); display: grid; grid-template-columns: 96px minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); column-gap: clamp(12px, 2vw, 24px); }
+    .page-header { grid-column: 2; margin-bottom: clamp(12px, 2.7vh, 26px); }
+    .page-nav { position: sticky; top: clamp(14px, 4vh, 38px); grid-column: 1; grid-row: 1 / -1; align-self: start; width: 100%; display: flex; flex-direction: column; gap: 3px; margin: 0; padding: 3px; border: 1px solid rgba(255,255,255,.76); border-radius: 11px; background: rgba(255,255,255,.48); box-shadow: 0 12px 34px rgba(76,61,111,.09); backdrop-filter: blur(18px); }
+    .page-nav a { width: 100%; min-width: 0; min-height: 42px; display: inline-flex; align-items: center; justify-content: center; padding: 8px 9px; border-radius: 8px; color: #686273; font-size: 12px; font-weight: 720; line-height: 1.3; text-align: center; text-decoration: none; }
+    .page-nav a:hover { color: var(--ink); background: rgba(255,255,255,.54); }
+    .page-nav a.active { background: #c9bdf2; color: #29213d; box-shadow: inset 0 1px rgba(255,255,255,.64), 0 4px 12px rgba(96,77,151,.12); }
+    .page-nav a:focus-visible { outline: 3px solid rgba(111,96,184,.46); outline-offset: 3px; }
+    .masthead { display: flex; align-items: center; justify-content: space-between; gap: 24px; color: var(--ink); }
+    .brand { min-width: 0; display: flex; align-items: center; gap: 13px; }
+    .brand-copy { min-width: 0; display: flex; align-items: baseline; flex-wrap: wrap; column-gap: 12px; row-gap: 3px; }
+    .brand-mark { display: grid; place-items: center; width: 54px; height: 54px; border: 1px solid rgba(255,255,255,.82); border-radius: 17px; background: rgba(255,255,255,.64); color: #57497d; font-size: 14px; font-weight: 760; letter-spacing: .04em; box-shadow: 5px 7px 17px rgba(76,61,111,.09); }
+    .brand h1 { margin: 0; font-size: clamp(30px, 3.2vw, 38px); font-weight: 680; line-height: 1.04; letter-spacing: -.045em; }
+    .baby-identity { margin: 0; color: var(--ink-soft); font-size: 15px; font-weight: 620; line-height: 1.3; white-space: nowrap; }
+    .baby-identity[hidden] { display: none; }
+    .connection-pill { display: inline-flex; align-items: center; gap: 10px; min-height: 42px; max-width: 390px; padding: 9px 15px; border: 1px solid rgba(255,255,255,.76); border-radius: 999px; background: rgba(255,255,255,.54); color: #5f596a; font-size: 12px; box-shadow: 0 9px 26px rgba(76,61,111,.07); backdrop-filter: blur(14px); }
+    .dot { flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; background: #8f8998; box-shadow: 0 0 0 4px rgba(107,99,119,.10); }
+    .dot.ok { background: #4caf83; box-shadow: 0 0 0 4px rgba(76,175,131,.13); }
+    .workbench { grid-column: 2; display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); overflow: hidden; border: 1px solid rgba(255,255,255,.76); border-radius: 24px; background: var(--paper); box-shadow: var(--shadow); backdrop-filter: blur(22px); }
+    .main-panel { min-width: 0; display: flex; flex-direction: column; gap: 15px; padding: 28px; border-right: 1px solid var(--line); background: rgba(255,255,255,.26); }
+    .side-panel { min-width: 0; display: flex; flex-direction: column; background: rgba(248,247,253,.52); }
+    .state-stage { position: relative; flex: 0 0 auto; min-height: 152px; display: flex; flex-direction: column; justify-content: center; padding: 25px 27px 23px; overflow: hidden; border: 1px solid rgba(255,255,255,.66); border-radius: 17px; background: linear-gradient(145deg, #cabef3, #ad9ae8); color: #29213d; box-shadow: inset 0 1px rgba(255,255,255,.56), 0 16px 34px rgba(104,83,164,.13); }
+    .state-stage::before { content: ""; position: absolute; top: 0; left: 30px; width: 70px; height: 2px; background: rgba(255,255,255,.76); }
+    .state-stage::after { content: ""; position: absolute; right: -46px; bottom: -92px; width: 220px; height: 220px; border: 1px solid rgba(255,255,255,.42); border-radius: 50%; box-shadow: 0 0 0 34px rgba(255,255,255,.10), 0 0 0 68px rgba(255,255,255,.055); pointer-events: none; }
+    .state-stage[data-mode="breastfeeding"] { border-color: #a887d9; }
+    .state-stage[data-mode="sleep"] { border-color: #8bb9df; }
+    .state-stage[data-mode="voice"] { border-color: #dfa78d; }
+    .state-kicker { display: flex; align-items: center; gap: 9px; margin-bottom: 16px; color: #504568; }
+    .state-kicker h2 { margin: 0; font-size: 13px; font-weight: 760; letter-spacing: .08em; line-height: 1.2; }
+    .state-kicker .dot { width: 7px; height: 7px; background: #6e60a6; }
+    .state-stage[data-mode]:not([data-mode="idle"]) .state-kicker .dot { background: #fff3a4; animation: breathe 1.8s ease-in-out infinite; }
+    #primary-state { position: relative; z-index: 1; max-width: 650px; margin: 0; font-size: clamp(27px, 3.1vw, 39px); font-weight: 690; font-variant-numeric: tabular-nums; line-height: 1.18; letter-spacing: -.04em; }
+    .voice-dialog { width: min(460px, calc(100% - 32px)); padding: 0; overflow: hidden; border: 1px solid rgba(255,255,255,.82); border-radius: 18px; background: rgba(249,247,255,.94); color: var(--ink); box-shadow: 0 34px 100px rgba(63,49,96,.30); }
+    .voice-dialog::backdrop { background: rgba(54,45,73,.38); backdrop-filter: blur(8px); }
+    .voice-dialog[open] { animation: dialog-in .18s ease-out; }
+    .voice-dialog-card { padding: 26px; }
+    .voice-dialog h2 { margin: 0 0 18px; font-family: inherit; font-size: 24px; font-weight: 690; letter-spacing: -.035em; }
+    .voice-error { min-height: 20px; margin-top: 8px; color: #a24956; font-size: 13px; line-height: 1.45; }
+    .voice-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+    .voice-action { min-height: 46px; border: 1px solid rgba(91,77,126,.18); border-radius: 11px; background: rgba(255,255,255,.55); color: var(--ink); font-weight: 720; cursor: pointer; }
+    .voice-action:hover { border-color: rgba(111,96,184,.42); background: rgba(255,255,255,.88); }
+    .voice-action.primary { border-color: #7968c3; background: #7968c3; color: #fff; }
+    .voice-action.primary:hover { background: #6757b0; }
+    .voice-action:focus-visible { outline: 3px solid rgba(111,96,184,.34); outline-offset: 3px; }
+    .voice-action:disabled { opacity: .42; cursor: wait; }
+    .voice-capture-status { min-height: 36px; display: grid; grid-template-columns: minmax(0, 1fr) 74px; gap: 12px; align-items: center; margin-top: 13px; color: var(--ink-soft); font-size: 12px; line-height: 1.45; }
+    .voice-level { height: 7px; overflow: hidden; border-radius: 999px; background: #e4deef; }
+    .voice-level span { display: block; width: 0; height: 100%; border-radius: inherit; background: #72bd9c; transition: width .08s linear; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    input { width: 100%; min-height: 48px; border: 1px solid rgba(91,77,126,.18); border-radius: 12px; padding: 11px 13px; background: rgba(255,255,255,.76); color: var(--ink); }
+    input:focus { border-color: var(--blue); outline: 3px solid rgba(111,96,184,.16); }
+    .small-button:focus-visible { outline: 3px solid rgba(111,96,184,.42); outline-offset: 3px; }
+    .small-button:disabled { opacity: .48; cursor: wait; transform: none; }
+    .side-section { padding: 29px 26px; }
+    .side-section + .side-section { border-top: 1px solid var(--line); }
+    .side-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 17px; }
+    .side-title h2 { margin: 0; font-family: inherit; font-size: 19px; font-weight: 690; letter-spacing: -.035em; }
+    .side-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; }
+    .small-button { min-height: 36px; padding: 7px 12px; border: 1px solid rgba(91,77,126,.14); border-radius: 999px; background: rgba(255,255,255,.56); color: var(--ink); font-size: 12px; font-weight: 680; cursor: pointer; box-shadow: inset 0 1px rgba(255,255,255,.62); }
+    .small-button:hover { border-color: rgba(111,96,184,.34); background: rgba(255,255,255,.84); }
+    .small-button.danger-button { border-color: rgba(171,85,96,.24); color: #954b56; }
+    .small-button.danger-button:hover { border-color: rgba(171,85,96,.44); background: #fbeaec; }
+    .small-button.danger-button:disabled { opacity: .42; cursor: not-allowed; }
+    .calendar-bar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; align-items: center; margin-bottom: 9px; }
+    .calendar-bar input[type="date"] { min-height: 40px; padding: 7px 11px; border-color: rgba(91,77,126,.14); border-radius: 999px; background: rgba(255,255,255,.68); font-size: 13px; font-weight: 670; color-scheme: light; }
+    .calendar-bar .small-button { min-width: 38px; padding-inline: 8px; }
+    .calendar-meta { display: flex; justify-content: space-between; gap: 12px; margin: 0 0 15px; color: var(--ink-soft); font-size: 12px; }
+    .calendar-meta strong { color: var(--ink); font-weight: 720; }
+    .daily-summary { flex: 0 0 auto; overflow: hidden; border: 1px solid rgba(126,105,192,.22); border-radius: 14px; background: rgba(255,255,255,.58); box-shadow: 0 12px 30px rgba(103,82,160,.09); }
+    .summary-heading { display: flex; min-height: 42px; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; background: rgba(231,225,250,.62); color: var(--ink-soft); font-size: 11px; }
+    .summary-heading h2 { margin: 0; color: var(--ink); font-family: inherit; font-size: 15px; font-weight: 700; letter-spacing: -.02em; line-height: 1.25; }
+    .summary-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid rgba(91,77,126,.09); }
+    .summary-item { min-width: 0; min-height: 100px; padding: 11px 12px 12px; background: rgba(238,234,253,.80); }
+    .summary-item:nth-child(2) { background: rgba(255,240,232,.86); }
+    .summary-item:nth-child(3) { background: rgba(232,247,241,.86); }
+    .summary-item:nth-child(4) { background: rgba(233,242,255,.86); }
+    .summary-item:nth-child(5) { background: rgba(255,248,218,.72); }
+    .summary-item:nth-child(even) { border-left: 1px solid rgba(91,77,126,.09); }
+    .summary-item:nth-child(n+3) { border-top: 1px solid rgba(91,77,126,.09); }
+    .summary-item:not(.summary-food) { display: grid; grid-template-columns: max-content minmax(0, 1fr); grid-template-rows: auto auto; align-content: center; column-gap: 10px; }
+    .summary-label { color: var(--ink-soft); font-size: 16px; font-weight: 720; line-height: 1.35; }
+    .summary-value { margin-top: 4px; color: var(--ink); font-family: inherit; font-size: 14px; font-weight: 690; line-height: 1.1; white-space: nowrap; }
+    .summary-detail { min-height: 2.8em; margin-top: 5px; color: #716c7c; font-size: 10px; line-height: 1.4; }
+    .summary-item:not(.summary-food) .summary-label, .summary-item:not(.summary-food) .summary-value { align-self: baseline; }
+    .summary-item:not(.summary-food) .summary-value { margin-top: 0; }
+    .summary-item:not(.summary-food) .summary-detail { grid-column: 1 / -1; }
+    .summary-food { grid-column: 1 / -1; display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: center; gap: 12px; border-top: 1px solid rgba(91,77,126,.09); border-left: 0 !important; }
+    .summary-food > div:first-child { display: flex; align-items: baseline; gap: 8px; white-space: nowrap; }
+    .summary-food .summary-value { margin-top: 0; }
+    .summary-food .summary-detail { min-height: 0; margin-top: 0; color: #5e5969; font-size: 13px; line-height: 1.45; overflow-wrap: anywhere; }
+    .intervals { flex: 0 0 auto; overflow: hidden; border: 1px solid rgba(92,169,139,.22); border-radius: 14px; background: rgba(255,255,255,.58); box-shadow: 0 12px 30px rgba(70,145,116,.075); }
+    .intervals-heading { display: flex; min-height: 42px; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; background: rgba(222,243,235,.68); color: var(--ink-soft); font-size: 11px; }
+    .intervals-heading h2 { margin: 0; color: var(--ink); font-family: inherit; font-size: 15px; font-weight: 700; letter-spacing: -.02em; line-height: 1.25; }
+    .interval-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid rgba(91,77,126,.09); }
+    .interval-item { min-width: 0; padding: 12px; background: rgba(238,234,253,.52); }
+    .interval-item:nth-child(2) { background: rgba(232,247,241,.58); }
+    .interval-item:nth-child(3) { background: rgba(233,242,255,.62); }
+    .interval-item + .interval-item { border-left: 1px solid rgba(91,77,126,.09); }
+    .interval-label { color: var(--ink-soft); font-size: 16px; font-weight: 720; line-height: 1.35; }
+    .interval-value { margin-top: 5px; color: var(--ink); font-family: inherit; font-size: 14px; font-weight: 690; font-variant-numeric: tabular-nums; line-height: 1.15; }
+    .interval-detail { min-height: 2.8em; margin-top: 5px; color: #716c7c; font-size: 10px; line-height: 1.4; }
+    .key-reference { flex: 0 0 auto; padding-top: 9px; border-top: 1px solid rgba(91,77,126,.10); }
+    .key-reference-heading { padding: 0 2px 7px; }
+    .key-reference-heading h2 { margin: 0; color: #716b7c; font-size: 10px; font-weight: 650; letter-spacing: .04em; line-height: 1.2; }
+    .key-reference-grid { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); column-gap: 4px; }
+    .key-reference-item { min-width: 0; display: grid; grid-template-rows: auto auto; justify-items: center; gap: 3px; text-align: center; }
+    .key-reference-item kbd { min-width: 22px; height: 20px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.82); border-radius: 5px; background: rgba(255,255,255,.54); color: #705fbd; font-family: inherit; font-size: 8px; font-weight: 720; box-shadow: 0 3px 9px rgba(83,67,117,.06); }
+    .key-reference-item span { min-width: 0; color: #716b7c; font-size: 8px; font-weight: 560; line-height: 1.2; white-space: nowrap; }
+    .timeline { display: grid; gap: 9px; }
+    .empty-state { padding: 30px 15px; border: 1px dashed rgba(91,77,126,.22); border-radius: 14px; background: rgba(255,255,255,.34); color: var(--ink-soft); text-align: center; }
+    .empty-state strong { display: block; margin-bottom: 5px; color: var(--ink); font-size: 15px; }
+    .item { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid rgba(255,255,255,.78); border-radius: 12px; background: rgba(255,255,255,.52); box-shadow: 0 8px 22px rgba(83,67,117,.05); }
+    .item-mark { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 11px; background: var(--night-soft); color: #3f3851; font-family: inherit; font-size: 12px; font-weight: 720; box-shadow: inset 0 1px rgba(255,255,255,.48); }
+    .item[data-kind="breastfeeding"] .item-mark { background: var(--event-breastfeeding); }
+    .item[data-kind="bottle"] .item-mark { background: var(--event-bottle); }
+    .item[data-kind="solid_food"] .item-mark { background: var(--event-solid-food); }
+    .item[data-kind="diaper"] .item-mark { background: var(--event-diaper); }
+    .item[data-kind="sleep"] .item-mark { background: var(--event-sleep); }
+    .item-copy { min-width: 0; }
+    .item-line { min-width: 0; overflow: hidden; color: var(--ink); line-height: 1.45; text-overflow: ellipsis; white-space: nowrap; }
+    .item-title { font-size: 14px; font-weight: 720; }
+    .meta { color: var(--ink-soft); font-size: 11px; }
+    .record-detail { color: #554f62; font-size: 12px; }
+    .item-line .meta::before, .item-line .record-detail::before { content: " · "; color: #aaa4b1; }
+    .item-error { margin-top: 4px; color: #a24956; font-size: 11px; line-height: 1.4; }
+    .badge { width: max-content; flex: 0 0 auto; border: 1px solid rgba(91,77,126,.13); border-radius: 999px; padding: 4px 8px; background: rgba(255,255,255,.38); color: #716b7c; font-size: 9px; letter-spacing: .04em; }
+    .badge.synced { background: #d9f1e7; color: #337258; }
+    .badge.failed, .badge.undo_failed { background: #f8dfe2; color: #9b4652; }
+    .badge.undone { color: #7b7683; text-decoration: line-through; }
+    .retry { min-height: 32px; margin-top: 7px; padding: 5px 9px; border: 0; border-radius: 8px; background: var(--red-soft); color: #934650; font-size: 11px; font-weight: 700; cursor: pointer; }
+    #toast { position: fixed; left: 50%; bottom: 24px; z-index: 10; max-width: calc(100% - 32px); padding: 12px 17px; border: 1px solid rgba(255,255,255,.24); border-radius: 12px; background: #423951; color: #fff; box-shadow: 0 12px 35px rgba(63,49,96,.24); opacity: 0; pointer-events: none; text-align: center; transform: translate(-50%, 16px); transition: opacity .18s ease, transform .18s ease; }
+    #toast.show { opacity: 1; transform: translate(-50%, 0); }
+    #toast.error { background: #9e4652; }
+    .muted { color: var(--ink-soft); }
+    @keyframes breathe { 50% { opacity: .36; transform: scale(.84); } }
+    @keyframes dialog-in { from { opacity: 0; transform: translateY(10px) scale(.985); } }
+    @media (min-width: 851px) {
+      body { overflow: hidden; }
+      .app-shell { height: 100svh; }
+      .workbench { min-height: 0; }
+      .main-panel { min-height: 0; overflow: hidden; }
+      .daily-summary, .intervals { display: flex; flex-direction: column; }
+      .daily-summary { flex: 1 1 auto; }
+      .intervals { flex: 0 1 auto; }
+      .summary-grid, .interval-grid { flex: 1; }
+      .summary-grid { grid-template-rows: repeat(3, minmax(0, 1fr)); }
+      .interval-item { display: flex; flex-direction: column; justify-content: center; }
+      .side-panel { min-height: 0; overflow: hidden; }
+      .side-section { display: flex; min-height: 0; height: 100%; flex-direction: column; }
+      .timeline { min-height: 0; overflow-y: auto; padding-right: 4px; scrollbar-gutter: stable; }
+    }
+    @media (min-width: 851px) and (max-width: 1100px) {
+      .workbench { grid-template-columns: minmax(0, 1.06fr) minmax(0, .94fr); }
+      .key-reference-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); row-gap: 6px; }
+      .key-reference-item span { font-size: 9px; }
+    }
+    @media (min-width: 851px) and (max-height: 900px) {
+      .app-shell { padding-block: 14px; }
+      .page-header { margin-bottom: 12px; }
+      .page-nav { top: 14px; }
+      .brand-mark { width: 52px; height: 52px; }
+      .brand h1 { font-size: clamp(30px, 2.8vw, 36px); }
+      .connection-pill { min-height: 38px; padding-block: 7px; }
+      .main-panel { gap: 12px; padding: 16px; }
+      .state-stage { min-height: 120px; padding: 18px 22px 16px; }
+      .state-kicker { margin-bottom: 10px; }
+      #primary-state { font-size: clamp(28px, 3.2vw, 40px); }
+      input { min-height: 42px; }
+      .side-section { padding: 20px 18px; }
+      .side-title { margin-bottom: 11px; }
+      .calendar-meta { margin-bottom: 10px; }
+      .summary-heading { min-height: 38px; padding-block: 8px; }
+      .daily-summary { min-height: 218px; flex-basis: 233px; }
+      .summary-item { min-height: 0; padding: 5px 10px 6px; }
+      .summary-detail { min-height: 1.4em; margin-top: 3px; }
+      .intervals-heading { min-height: 38px; padding-block: 8px; }
+      .intervals { min-height: 118px; flex-basis: 122px; }
+      .interval-item { padding: 7px 10px; }
+      .interval-detail { min-height: 1.4em; margin-top: 3px; }
+      .item { padding: 11px; }
+    }
+    @media (min-width: 851px) and (max-height: 680px) {
+      body { overflow: auto; }
+      .app-shell { height: auto; min-height: 680px; }
+    }
+    @media (max-width: 850px) {
+      .app-shell { width: min(760px, calc(100% - 24px)); height: auto; min-height: 100svh; padding-top: 20px; grid-template-columns: 82px minmax(0, 1fr); column-gap: 12px; }
+      .page-nav { top: 20px; }
+      .masthead { align-items: flex-start; flex-direction: column; gap: 15px; }
+      .connection-pill { width: 100%; max-width: 100%; }
+      .workbench { grid-template-columns: 1fr; border-radius: 24px; }
+      .main-panel { padding: 22px; border-right: 0; }
+      .side-panel { border-top: 1px solid var(--line); }
+    }
+    @media (max-width: 520px) {
+      .app-shell { width: calc(100% - 16px); padding: 12px 0 24px; grid-template-columns: 68px minmax(0, 1fr); column-gap: 8px; }
+      .page-nav { top: 12px; padding: 2px; gap: 2px; border-radius: 10px; }
+      .page-nav a { min-height: 44px; padding: 7px 4px; font-size: 11px; }
+      .brand { gap: 10px; }
+      .brand-copy { column-gap: 8px; row-gap: 2px; }
+      .brand-mark { width: 44px; height: 44px; border-radius: 13px; font-size: 12px; }
+      .brand h1 { font-size: 28px; }
+      .baby-identity { font-size: 14px; }
+      .main-panel { padding: 14px; }
+      .state-stage { min-height: 160px; padding: 22px 18px; border-radius: 18px; }
+      #primary-state { font-size: 27px; }
+      .side-section { padding: 22px 18px; }
+      .calendar-bar { grid-template-columns: 38px minmax(0, 1fr) 38px; }
+      .interval-grid { grid-template-columns: 1fr; }
+      .interval-item + .interval-item { border-top: 1px solid rgba(91,77,126,.09); border-left: 0; }
+      .key-reference-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .key-reference-item { grid-template-columns: auto minmax(0, 1fr); grid-template-rows: none; justify-items: stretch; gap: 5px; padding-right: 7px; text-align: left; }
+      .key-reference-item span { font-size: 9px; }
+      .voice-dialog-card { padding: 22px 18px 18px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <nav class="page-nav" aria-label="页面切换"><a class="active" href="/" aria-current="page">记录台</a><a href="/device">按键说明</a></nav>
+    <div class="page-header">
+      <header class="masthead">
+        <div class="brand"><div class="brand-mark" aria-hidden="true">B·T</div><div class="brand-copy"><h1>宝宝记录台</h1><p id="baby-identity" class="baby-identity" aria-live="polite" hidden></p></div></div>
+        <div id="bb-pill" class="connection-pill"><span class="dot"></span><span>育儿记录库未配置，本机保存可用</span></div>
+      </header>
+    </div>
+    <div class="workbench">
+      <section class="main-panel" aria-label="记录状态">
+        <section class="state-stage" id="state-stage" data-mode="idle" aria-live="polite">
+          <div class="state-kicker"><span class="dot"></span><h2 id="state-label">当前状态</h2></div>
+          <p id="primary-state">正在读取…</p>
+        </section>
+        <section class="daily-summary" aria-labelledby="summary-period">
+          <div class="summary-heading"><h2 id="summary-period">今日概览 · 截至现在</h2><span>按今日有效记录累计</span></div>
+          <div class="summary-grid">
+            <div class="summary-item"><div class="summary-label">奶瓶</div><div class="summary-value" id="summary-bottle">0 ml</div><div class="summary-detail" id="summary-bottle-detail">0 次记录</div></div>
+            <div class="summary-item"><div class="summary-label">母乳</div><div class="summary-value" id="summary-breastfeeding">0 分钟</div><div class="summary-detail" id="summary-breastfeeding-detail">左 0 分 · 右 0 分</div></div>
+            <div class="summary-item"><div class="summary-label">尿布</div><div class="summary-value" id="summary-diaper">0 次</div><div class="summary-detail" id="summary-diaper-detail">尿 0 · 便 0 · 未分 0</div></div>
+            <div class="summary-item"><div class="summary-label">睡眠</div><div class="summary-value" id="summary-sleep">0 分钟</div><div class="summary-detail" id="summary-sleep-detail">0 次完成记录</div></div>
+            <div class="summary-item summary-food"><div><div class="summary-label">辅食</div><div class="summary-value" id="summary-solid-food">0 次</div></div><div class="summary-detail" id="summary-solid-food-detail">暂无记录</div></div>
+          </div>
+        </section>
+        <section class="intervals" aria-labelledby="intervals-title">
+          <div class="intervals-heading"><h2 id="intervals-title">关键间隔</h2><span>根据最近有效记录</span></div>
+          <div class="interval-grid">
+            <div class="interval-item"><div class="interval-label">距上次喂奶</div><div class="interval-value" id="feeding-interval">暂无记录</div><div class="interval-detail" id="feeding-interval-detail">母乳或奶瓶</div></div>
+            <div class="interval-item"><div class="interval-label">距上次换尿布</div><div class="interval-value" id="diaper-interval">暂无记录</div><div class="interval-detail" id="diaper-interval-detail">还没有尿布记录</div></div>
+            <div class="interval-item"><div class="interval-label" id="sleep-interval-label">距上次醒来</div><div class="interval-value" id="sleep-interval">暂无记录</div><div class="interval-detail" id="sleep-interval-detail">还没有完成的睡眠记录</div></div>
+          </div>
+        </section>
+        <section class="key-reference" aria-labelledby="key-reference-title">
+          <div class="key-reference-heading"><h2 id="key-reference-title">键位备忘</h2></div>
+          <div class="key-reference-grid" role="list">
+            <div class="key-reference-item" role="listitem"><kbd>K1</kbd><span>左侧母乳</span></div>
+            <div class="key-reference-item" role="listitem"><kbd>K2</kbd><span>右侧母乳</span></div>
+            <div class="key-reference-item" role="listitem"><kbd>K3</kbd><span>奶瓶奶量</span></div>
+            <div class="key-reference-item" role="listitem"><kbd>K4</kbd><span>辅食内容</span></div>
+            <div class="key-reference-item" role="listitem"><kbd>K5</kbd><span>换尿布</span></div>
+            <div class="key-reference-item" role="listitem"><kbd>K6</kbd><span>睡眠</span></div>
+            <div class="key-reference-item" role="listitem"><kbd>K7</kbd><span>撤销／取消</span></div>
+            <div class="key-reference-item" role="listitem"><kbd>K8</kbd><span>播报状态</span></div>
+          </div>
+        </section>
+      </section>
+      <aside class="side-panel" aria-label="宝宝时间线">
+        <section class="side-section">
+          <div class="side-title"><h2>宝宝时间线</h2><div class="side-actions"><button id="reset-day" class="small-button danger-button" type="button" onclick="resetSelectedDay()" disabled>清空当日</button><button class="small-button" type="button" onclick="selectToday()">回到今天</button></div></div>
+          <div class="calendar-bar" aria-label="选择记录日期">
+            <button class="small-button" type="button" onclick="moveSelectedDate(-1)" aria-label="前一天">←</button>
+            <input id="timeline-date" type="date" aria-label="选择要查看的日期" onchange="selectDate(this.value)">
+            <button class="small-button" type="button" onclick="moveSelectedDate(1)" aria-label="后一天">→</button>
+          </div>
+          <div class="calendar-meta"><strong id="timeline-date-label">今天</strong><span id="timeline-count">0 条记录</span></div>
+          <div id="timeline" class="timeline"><div class="empty-state"><strong>今天还没有记录</strong>完成第一条记录后会显示在这里</div></div>
+        </section>
+      </aside>
+    </div>
+  </main>
+  <dialog class="voice-dialog" id="voice-dialog" aria-labelledby="voice-title">
+    <div class="voice-dialog-card">
+      <h2 id="voice-title">录入奶瓶奶量</h2>
+      <input id="transcript" aria-label="奶量" inputmode="decimal" autocomplete="off" placeholder="例如：120 毫升" oninput="updateVoiceActions(true)" onkeydown="if(event.key==='Enter' && !event.isComposing) confirmVoice()">
+      <div id="voice-error" class="voice-error" role="alert"></div>
+      <div class="voice-actions">
+        <button class="voice-action" type="button" onclick="cancelVoice()">取消</button>
+        <button class="voice-action primary" type="button" id="confirm" onclick="confirmVoice()" disabled>确认</button>
+      </div>
+      <div class="voice-capture-status"><span id="voice-status" role="status" aria-live="polite">打开后会自动收音，说完稍等即可。</span><span class="voice-level" aria-hidden="true"><span id="voice-level-bar"></span></span></div>
+    </div>
+  </dialog>
+  <div id="toast" role="status" aria-live="assertive"></div>
+  <script src="/static/easyinput-webhid.js"></script>
+  <script>
+    const labels = {breastfeeding:'母乳', bottle:'奶瓶', solid_food:'辅食', diaper:'换尿布', sleep:'睡眠'};
+    const shortLabels = {breastfeeding:'乳', bottle:'奶', solid_food:'食', diaper:'换', sleep:'眠'};
+    const statusLabels = {local_only:'仅本机', pending:'待同步', syncing:'同步中', synced:'已同步', failed:'同步失败', undone:'已撤销', undo_failed:'撤销失败'};
+    // The two board prompts are about 1.4 seconds long. Keep microphone
+    // admission behind the complete prompt plus a small BLE/output margin so
+    // the half-duplex audio path never postpones the prompt until recording stops.
+    const BOARD_PROMPT_LEAD_IN_MS = 1800;
+    let currentState = null;
+    let speechListening = false;
+    let speechDeadline = 0;
+    let speechCountdownTimer = null;
+    let voiceStartTimer = null;
+    let voicePromptPending = false;
+    let keyboardSpeech = false;
+    let speechStopTimer = null;
+    let keyboardSpeechStopping = false;
+    let computerSpeech = null;
+    let computerSpeechStopping = false;
+    let voiceCaptureToken = 0;
+    let voiceConfirmBusy = false;
+    let bbStatus = {configured:false, connected:false};
+    let actionBusy = false;
+    let cachedRecords = [];
+    let cachedOperations = [];
+    let webHid = null;
+    let resetBusy = false;
+    let refreshRequestId = 0;
+    let selectedDate = localDateKey(new Date());
+    function friendlyError(message) {
+      const translations = {
+        'no voice action is waiting for confirmation': '当前没有等待确认的语音内容',
+        'voice context changed before confirmation': '录入类型已改变，请检查内容后重新确认',
+        'sleep end must be later than sleep start': '睡眠结束时间必须晚于开始时间',
+        'an undone operation cannot be synchronized': '已撤销的记录不能再次同步',
+        'Baby Buddy URL is required': '缺少育儿记录库地址',
+        'Baby Buddy token is required': '缺少育儿记录库访问令牌'
+      };
+      return translations[message] || message || '操作没有完成，请再试一次';
+    }
+    function toast(message, error=false) {
+      const el = document.querySelector('#toast'); el.textContent = friendlyError(message); el.className = `show${error ? ' error' : ''}`;
+      clearTimeout(el.timer); el.timer = setTimeout(() => el.className = '', 3200);
+    }
+    function elapsed(seconds) {
+      const total = Math.max(0, Math.floor(Number(seconds) || 0));
+      const hours = Math.floor(total / 3600), min = Math.floor((total % 3600) / 60), sec = total % 60;
+      if (hours) return `${hours} 小时 ${min} 分`;
+      if (min) return `${min} 分 ${String(sec).padStart(2, '0')} 秒`;
+      return `${sec} 秒`;
+    }
+    function localDateKey(value) {
+      const date = value instanceof Date ? value : new Date(value);
+      const year = date.getFullYear(), month = String(date.getMonth() + 1).padStart(2, '0'), day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+    function liveElapsed(item) {
+      if (!item || !item.started_at) return Number(item && item.elapsed_seconds) || 0;
+      return Math.max(0, Math.floor((Date.now() - new Date(item.started_at).getTime()) / 1000));
+    }
+    function babyAge(birthDate, today=new Date()) {
+      const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(birthDate || '');
+      if (!match) return '';
+      const birth = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+      const current = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      if (Number.isNaN(birth.getTime()) || birth > current) return '';
+      let years = current.getFullYear() - birth.getFullYear();
+      let months = current.getMonth() - birth.getMonth();
+      let days = current.getDate() - birth.getDate();
+      if (days < 0) {
+        const previousMonthDays = new Date(current.getFullYear(), current.getMonth(), 0).getDate();
+        days += previousMonthDays;
+        months -= 1;
+      }
+      if (months < 0) { months += 12; years -= 1; }
+      const parts = [];
+      if (years) parts.push(`${years}岁`);
+      if (months) parts.push(`${months}个月`);
+      if (days || parts.length === 0) parts.push(`${days}天`);
+      return parts.join('');
+    }
+    function renderBabyIdentity(status) {
+      const identity = document.querySelector('#baby-identity');
+      const child = status && status.child_found ? status.child : null;
+      const name = child ? [child.first_name, child.last_name].filter(Boolean).join(' ').trim() : '';
+      const age = child ? babyAge(child.birth_date) : '';
+      identity.textContent = [name, age].filter(Boolean).join(' · ');
+      identity.hidden = !identity.textContent;
+      if (name) document.title = `${name} · BabyTap 记录台`;
+    }
+    function stateText(data) {
+      if (data.breastfeeding.active) return `${data.breastfeeding.side === 'left' ? '左侧' : '右侧'}母乳计时中 · ${elapsed(liveElapsed(data.breastfeeding))}`;
+      if (data.sleep.active) return `宝宝睡眠计时中 · ${elapsed(liveElapsed(data.sleep))}`;
+      if (data.pending_voice) return data.pending_voice === 'bottle' ? '等待录入奶瓶奶量' : '等待录入辅食内容';
+      return '现在没有进行中的事项';
+    }
+    function stateMode(data) { if (data.breastfeeding.active) return 'breastfeeding'; if (data.sleep.active) return 'sleep'; if (data.pending_voice) return 'voice'; return 'idle'; }
+    async function api(url, options={}) { const response = await fetch(url, options); const data = await response.json(); if (!response.ok) throw new Error(data.detail || `请求失败（${response.status}）`); return data; }
+    function renderLiveState() {
+      if (!currentState) return;
+      document.querySelector('#primary-state').textContent = stateText(currentState);
+      renderKeyIntervals(cachedRecords);
+    }
+    async function refresh() {
+      const requestId = ++refreshRequestId;
+      try {
+        const [state, records, operations] = await Promise.all([api('/api/state'), api('/api/records'), api('/api/operations')]);
+        if (requestId !== refreshRequestId) return;
+        currentState = state; cachedRecords = records; cachedOperations = operations;
+        const mode = stateMode(state); document.querySelector('#state-stage').dataset.mode = mode; document.querySelector('#state-label').textContent = mode === 'idle' ? '当前状态' : '正在进行';
+        renderLiveState();
+        syncVoiceDialog(state.pending_voice);
+        if (!state.pending_voice && speechListening) stopSpeech();
+        const pill = document.querySelector('#bb-pill');
+        const bbLabel = !state.babybuddy.configured ? '育儿记录库未配置，本机保存可用' : bbStatus.connected && bbStatus.child_found ? '育儿记录库已连接' : bbStatus.connected ? '育儿记录库已连接，但未找到宝宝' : bbStatus.error ? '育儿记录库连接失败' : '育儿记录库已配置，正在检查';
+        pill.innerHTML = `<span class="dot ${bbStatus.connected && bbStatus.child_found ? 'ok' : ''}"></span><span>${bbLabel}</span>`;
+        renderBabyIdentity(bbStatus);
+        renderDailySummary(records);
+        renderKeyIntervals(records);
+        renderTimeline(records, operations);
+      } catch (error) { if (requestId === refreshRequestId) toast(error.message, true); }
+    }
+    function selectDate(value) { if (!value) return; selectedDate = value; renderTimeline(cachedRecords, cachedOperations); }
+    function selectToday() { selectedDate = localDateKey(new Date()); renderTimeline(cachedRecords, cachedOperations); }
+    function moveSelectedDate(days) {
+      const date = new Date(`${selectedDate}T12:00:00`); date.setDate(date.getDate() + days); selectedDate = localDateKey(date); renderTimeline(cachedRecords, cachedOperations);
+    }
+    function clock(value, includeSeconds=false) { return new Date(value).toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit', ...(includeSeconds ? {second:'2-digit'} : {})}); }
+    function dateLabel(value) {
+      const today = localDateKey(new Date());
+      if (value === today) return '今天';
+      return new Date(`${value}T12:00:00`).toLocaleDateString('zh-CN', {month:'long', day:'numeric', weekday:'short'});
+    }
+    function breastfeedingTitle(record) {
+      const left = Number(record.data.left_seconds) || 0, right = Number(record.data.right_seconds) || 0;
+      if (left && right) return '左右侧母乳';
+      if (left) return '左侧母乳';
+      if (right) return '右侧母乳';
+      return '母乳';
+    }
+    function breastfeedingDetail(record) {
+      const parts = [];
+      const left = Number(record.data.left_seconds) || 0, right = Number(record.data.right_seconds) || 0;
+      if (left) parts.push(`左侧 ${elapsed(left)}`);
+      if (right) parts.push(`右侧 ${elapsed(right)}`);
+      const sequence = (record.data.segments || []).map(segment => segment.side === 'left' ? '左' : '右').filter((side, index, all) => index === 0 || side !== all[index - 1]);
+      if (sequence.length > 1) parts.push(`顺序 ${sequence.join(' → ')}`);
+      return parts.join(' · ');
+    }
+    function recordDuration(record) {
+      if (record.kind === 'breastfeeding') return Number(record.data.total_seconds) || Math.max(0, Math.floor((new Date(record.ended_at) - new Date(record.started_at)) / 1000));
+      if (record.data && record.data.duration_seconds !== undefined) return Number(record.data.duration_seconds) || 0;
+      return Math.max(0, Math.floor((new Date(record.ended_at) - new Date(record.started_at)) / 1000));
+    }
+    function recordDetail(record) {
+      const duration = recordDuration(record);
+      const start = clock(record.started_at, true);
+      const time = duration > 0 ? `${start}–${clock(record.ended_at, true)} · 持续 ${elapsed(duration)}` : start;
+      let extra = '';
+      if (record.kind === 'breastfeeding') extra = breastfeedingDetail(record);
+      if (record.kind === 'bottle') extra = `${Number(record.data.amount_ml) || 0} 毫升`;
+      if (record.kind === 'solid_food') extra = escapeHtml(record.data.description || '未填写内容');
+      return {time, extra};
+    }
+    function summaryDuration(seconds) {
+      const total = Math.max(0, Math.round(Number(seconds) || 0));
+      const hours = Math.floor(total / 3600), minutes = Math.floor((total % 3600) / 60);
+      if (hours) return minutes ? `${hours}时${minutes}分` : `${hours}小时`;
+      if (minutes) return `${minutes}分钟`;
+      return total ? `${total}秒` : '0分钟';
+    }
+    function summaryMl(value) {
+      const rounded = Math.round((Number(value) || 0) * 10) / 10;
+      return `${Number.isInteger(rounded) ? rounded : rounded.toFixed(1)} ml`;
+    }
+    function renderDailySummary(records) {
+      const summary = {bottles:0, bottleMl:0, breastfeedingCount:0, breastfeeding:0, left:0, right:0, diapers:0, wet:0, solid:0, unclassified:0, sleepCount:0, sleep:0, solidFoods:[]};
+      const today = localDateKey(new Date());
+      records.filter(record => localDateKey(record.started_at) === today).forEach(record => {
+        const data = record.data || {};
+        if (record.kind === 'bottle') { summary.bottles += 1; summary.bottleMl += Number(data.amount_ml) || 0; }
+        if (record.kind === 'solid_food') summary.solidFoods.push(String(data.description || '未填写内容').trim() || '未填写内容');
+        if (record.kind === 'breastfeeding') {
+          summary.breastfeedingCount += 1;
+          const left = Number(data.left_seconds) || 0, right = Number(data.right_seconds) || 0;
+          summary.left += left; summary.right += right;
+          summary.breastfeeding += Number(data.total_seconds) || left + right || recordDuration(record);
+        }
+        if (record.kind === 'diaper') {
+          summary.diapers += 1;
+          const wet = data.wet === true, solid = data.solid === true;
+          if (wet) summary.wet += 1;
+          if (solid) summary.solid += 1;
+          if (!wet && !solid) summary.unclassified += 1;
+        }
+        if (record.kind === 'sleep') { summary.sleepCount += 1; summary.sleep += recordDuration(record); }
+      });
+      document.querySelector('#summary-period').textContent = `今日概览 · 截至 ${clock(new Date())}`;
+      document.querySelector('#summary-bottle').textContent = summaryMl(summary.bottleMl);
+      document.querySelector('#summary-bottle-detail').textContent = `${summary.bottles} 次记录`;
+      document.querySelector('#summary-breastfeeding').textContent = summaryDuration(summary.breastfeeding);
+      document.querySelector('#summary-breastfeeding-detail').textContent = `${summary.breastfeedingCount} 次 · 左 ${summaryDuration(summary.left)} · 右 ${summaryDuration(summary.right)}`;
+      document.querySelector('#summary-diaper').textContent = `${summary.diapers} 次`;
+      document.querySelector('#summary-diaper-detail').textContent = `尿 ${summary.wet} · 便 ${summary.solid} · 未分 ${summary.unclassified}`;
+      document.querySelector('#summary-sleep').textContent = summaryDuration(summary.sleep);
+      document.querySelector('#summary-sleep-detail').textContent = `${summary.sleepCount} 次完成记录`;
+      document.querySelector('#summary-solid-food').textContent = `${summary.solidFoods.length} 次`;
+      document.querySelector('#summary-solid-food-detail').textContent = summary.solidFoods.length ? summary.solidFoods.join('、') : '暂无记录';
+    }
+    function intervalText(value) {
+      const seconds = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 1000));
+      const days = Math.floor(seconds / 86400), hours = Math.floor((seconds % 86400) / 3600), minutes = Math.floor((seconds % 3600) / 60);
+      if (days) return hours ? `${days} 天 ${hours} 小时` : `${days} 天`;
+      if (hours) return minutes ? `${hours} 小时 ${minutes} 分` : `${hours} 小时`;
+      if (minutes) return `${minutes} 分钟`;
+      return '刚刚';
+    }
+    function latestRecord(records, kinds) {
+      return records.filter(record => kinds.includes(record.kind)).reduce((latest, record) => {
+        if (!latest) return record;
+        return new Date(record.ended_at).getTime() > new Date(latest.ended_at).getTime() ? record : latest;
+      }, null);
+    }
+    function renderKeyIntervals(records) {
+      const feeding = latestRecord(records, ['breastfeeding', 'bottle']);
+      const diaper = latestRecord(records, ['diaper']);
+      const sleep = latestRecord(records, ['sleep']);
+      const feedingValue = document.querySelector('#feeding-interval');
+      const feedingDetail = document.querySelector('#feeding-interval-detail');
+      if (currentState && currentState.breastfeeding.active) {
+        feedingValue.textContent = '正在喂奶';
+        feedingDetail.textContent = `已进行 ${elapsed(liveElapsed(currentState.breastfeeding))}`;
+      } else if (feeding) {
+        feedingValue.textContent = intervalText(feeding.ended_at);
+        feedingDetail.textContent = `${feeding.kind === 'breastfeeding' ? '母乳' : '奶瓶'} · ${clock(feeding.ended_at)}`;
+      } else {
+        feedingValue.textContent = '暂无记录';
+        feedingDetail.textContent = '母乳或奶瓶';
+      }
+      document.querySelector('#diaper-interval').textContent = diaper ? intervalText(diaper.ended_at) : '暂无记录';
+      document.querySelector('#diaper-interval-detail').textContent = diaper ? `最近一次 ${clock(diaper.ended_at)}` : '还没有尿布记录';
+      const sleepLabel = document.querySelector('#sleep-interval-label');
+      const sleepValue = document.querySelector('#sleep-interval');
+      const sleepDetail = document.querySelector('#sleep-interval-detail');
+      if (currentState && currentState.sleep.active) {
+        sleepLabel.textContent = '本次睡眠';
+        sleepValue.textContent = `已睡 ${intervalText(currentState.sleep.started_at)}`;
+        sleepDetail.textContent = `从 ${clock(currentState.sleep.started_at)} 开始`;
+      } else if (sleep) {
+        sleepLabel.textContent = '距上次醒来';
+        sleepValue.textContent = intervalText(sleep.ended_at);
+        sleepDetail.textContent = `上次于 ${clock(sleep.ended_at)} 醒来`;
+      } else {
+        sleepLabel.textContent = '距上次醒来';
+        sleepValue.textContent = '暂无记录';
+        sleepDetail.textContent = '还没有完成的睡眠记录';
+      }
+    }
+    function renderTimeline(records, operations) {
+      const byId = Object.fromEntries(operations.map(item => [item.record_id, item])); const recordIds = new Set(records.map(record => record.record_id));
+      const items = records.map(record => ({...record, operation: byId[record.record_id]}));
+      operations.filter(operation => operation.status !== 'undone' && !recordIds.has(operation.record_id)).forEach(operation => items.push({record_id: operation.record_id, kind: operation.kind, started_at: operation.created_at, data: {}, operation}));
+      items.sort((a, b) => new Date(b.started_at) - new Date(a.started_at));
+      const dayItems = items.filter(record => localDateKey(record.started_at) === selectedDate);
+      const resettableRecords = records.filter(record => localDateKey(record.started_at) === selectedDate);
+      document.querySelector('#timeline-date').value = selectedDate;
+      document.querySelector('#timeline-date-label').textContent = dateLabel(selectedDate);
+      document.querySelector('#timeline-count').textContent = `${dayItems.length} 条记录`;
+      const resetButton = document.querySelector('#reset-day');
+      resetButton.disabled = resetBusy || resettableRecords.length === 0;
+      resetButton.dataset.recordIds = resettableRecords.map(record => record.record_id).join(',');
+      const html = dayItems.map(record => {
+        const op = record.operation; const status = op ? op.status : 'local_only';
+        const detail = recordDetail(record);
+        const title = record.kind === 'breastfeeding' ? breastfeedingTitle(record) : (labels[record.kind] || '记录');
+        const retryable = ['failed','undo_failed'].includes(status) || (status === 'pending' && currentState.babybuddy.configured);
+        const retryButton = retryable ? `<button class="retry" onclick="retry('${record.record_id}')">重新同步</button>` : '';
+        const errorDetail = op && op.error ? `<div class="item-error">${escapeHtml(friendlyError(op.error))}</div>` : '';
+        const extra = detail.extra ? `<span class="record-detail">${detail.extra}</span>` : '';
+        return `<article class="item" data-kind="${record.kind}"><span class="item-mark" aria-hidden="true">${shortLabels[record.kind] || '记'}</span><div class="item-copy"><div class="item-line"><span class="item-title">${title}</span><span class="meta">${detail.time}</span>${extra}</div>${errorDetail}${retryButton}</div><span class="badge ${status}">${statusLabels[status] || '仅本机'}</span></article>`;
+      }).join('');
+      document.querySelector('#timeline').innerHTML = html || `<div class="empty-state"><strong>${dateLabel(selectedDate)}还没有记录</strong>选择其他日期查看历史记录</div>`;
+    }
+    async function resetSelectedDay() {
+      if (resetBusy) return;
+      const button = document.querySelector('#reset-day');
+      const recordIds = (button.dataset.recordIds || '').split(',').filter(Boolean);
+      if (!recordIds.length) return toast('所选日期没有可清空的记录', true);
+      const label = dateLabel(selectedDate);
+      if (!window.confirm(`确定清空${label}的 ${recordIds.length} 条记录吗？\n\n已经同步的记录也会从育儿记录库撤销，此操作不能恢复。`)) return;
+      resetBusy = true;
+      button.disabled = true;
+      try {
+        const result = await api('/api/records/reset', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({record_ids:recordIds})});
+        await refresh();
+        if (result.failed_count) {
+          toast(`已清空 ${result.deleted_count} 条，${result.failed_count} 条撤销失败并已保留`, true);
+        } else {
+          toast(`已清空${label}的 ${result.deleted_count} 条记录`);
+        }
+      } catch (error) {
+        toast(error.message, true);
+      } finally {
+        resetBusy = false;
+        button.disabled = !(button.dataset.recordIds || '');
+      }
+    }
+    function escapeHtml(value) { const div = document.createElement('div'); div.textContent = value; return div.innerHTML; }
+    async function press(key) {
+      if (actionBusy) return; actionBusy = true;
+      try { const data = await api(`/api/device/keys/${key}`, {method:'POST'}); const message = data.sync_status === 'failed' ? data.sync_error : actionMessage(data); toast(message || '操作已完成', data.sync_status === 'failed'); if (data.action === 'cancelled') stopSpeech(); await refresh(); }
+      catch (error) { toast(error.message, true); } finally { actionBusy = false; }
+    }
+    function actionMessage(data) {
+      if (data.sync_status === 'synced') return '已经写入育儿记录库';
+      if (data.action === 'undone' && data.sync_status === 'local_only') return '已经撤销本机记录';
+      if (data.sync_status === 'local_only') return '已经保存在本机，育儿记录库尚未连接';
+      const map = {started:'计时已经开始', switched:'已经换到另一侧', completed:'计时已经结束', recorded:'已经记录', cancelled:'已经取消', undone:'已经撤销', voice_requested:'请说出要记录的内容', nothing_to_undo:'目前没有可撤销的操作', status:'状态已经播报'}; return map[data.action];
+    }
+    function syncVoiceDialog(pendingVoice) {
+      const dialog = document.querySelector('#voice-dialog');
+      if (!pendingVoice) {
+        if (voicePromptPending) stopSpeech();
+        if (dialog.open) dialog.close();
+        return;
+      }
+      const bottle = pendingVoice === 'bottle';
+      document.querySelector('#voice-title').textContent = bottle ? '录入奶瓶奶量' : '录入辅食内容';
+      const input = document.querySelector('#transcript');
+      input.placeholder = bottle ? '例如：120 毫升' : '例如：南瓜泥和米糊';
+      input.inputMode = bottle ? 'decimal' : 'text';
+      input.setAttribute('aria-label', bottle ? '奶量' : '辅食内容');
+      if (!dialog.open) {
+        dialog.showModal();
+        requestAnimationFrame(() => input.focus());
+        scheduleVoiceCapture();
+      }
+    }
+    function scheduleVoiceCapture() {
+      clearTimeout(voiceStartTimer);
+      const boardPromptQueued = currentState?.device?.ble_feedback?.connected === true;
+      const delay = boardPromptQueued ? BOARD_PROMPT_LEAD_IN_MS : 120;
+      voicePromptPending = boardPromptQueued;
+      if (boardPromptQueued) setVoiceHint('正在播放板载提示音，播完后自动开始收音…');
+      voiceStartTimer = setTimeout(async () => {
+        voiceStartTimer = null;
+        voicePromptPending = false;
+        if (currentState?.pending_voice) await startSpeech();
+      }, delay);
+    }
+    function setVoiceHint(message) { document.querySelector('#voice-status').textContent = message; }
+    function setVoiceLevel(rms=0) { document.querySelector('#voice-level-bar').style.width = `${Math.min(100, Math.round(rms * 900))}%`; }
+    function updateVoiceActions(clearError=false) {
+      const transcript = document.querySelector('#transcript').value.trim();
+      if (clearError) document.querySelector('#voice-error').textContent = '';
+      document.querySelectorAll('#voice-dialog button, #transcript').forEach(control => control.disabled = voiceConfirmBusy);
+      document.querySelector('#confirm').disabled = voiceConfirmBusy || !transcript;
+    }
+    function releaseComputerSpeech() {
+      const session = computerSpeech;
+      computerSpeech = null;
+      if (!session) return null;
+      session.processor.onaudioprocess = null;
+      try { session.source.disconnect(); } catch (_) {}
+      try { session.processor.disconnect(); } catch (_) {}
+      try { session.silentGain.disconnect(); } catch (_) {}
+      session.stream.getTracks().forEach(track => track.stop());
+      session.context.close().catch(() => {});
+      setVoiceLevel();
+      return session;
+    }
+    function stopSpeech(resetHint=false) {
+      voiceCaptureToken += 1;
+      speechListening = false;
+      clearTimeout(voiceStartTimer); voiceStartTimer = null; voicePromptPending = false;
+      clearInterval(speechCountdownTimer); clearTimeout(speechStopTimer);
+      speechCountdownTimer = null; speechStopTimer = null;
+      if (keyboardSpeech) fetch('/api/audio/capture/stop', {method:'POST'}).catch(() => {});
+      keyboardSpeech = false;
+      releaseComputerSpeech();
+      computerSpeechStopping = false;
+      if (resetHint) setVoiceHint('打开后会自动收音，说完稍等即可。');
+    }
+    function finishSpeechWindow() {
+      if (keyboardSpeech) { finishKeyboardSpeech(); return; }
+      if (computerSpeech) { finishComputerSpeech(); return; }
+      stopSpeech();
+    }
+    function updateSpeechCountdown() {
+      if (!speechListening) return;
+      const remaining = Math.max(0, Math.ceil((speechDeadline - Date.now()) / 1000));
+      if (remaining <= 0) { finishSpeechWindow(); return; }
+      if (keyboardSpeech) {
+        const stopKey = currentState?.pending_voice === 'bottle' ? 'K3' : 'K4';
+        setVoiceHint(`正在使用 EasyInput 麦克风；说完再按一次 ${stopKey}，立即识别。最长等待 ${remaining} 秒。`);
+        return;
+      }
+      setVoiceHint(`正在使用电脑麦克风，还会等待 ${remaining} 秒。说完后会自动识别。`);
+    }
+    function pcm16Buffer(chunks) {
+      const total = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+      const buffer = new ArrayBuffer(total * 2);
+      const view = new DataView(buffer);
+      let offset = 0;
+      chunks.forEach(chunk => chunk.forEach(value => {
+        const sample = Math.max(-1, Math.min(1, value));
+        view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+        offset += 2;
+      }));
+      return buffer;
+    }
+    async function startComputerSpeech() {
+      stopSpeech();
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setVoiceHint('当前浏览器不能采集电脑麦克风，可以直接输入文字。');
+        return toast('当前浏览器不能采集电脑麦克风', true);
+      }
+      let stream = null;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({audio:{channelCount:1, echoCancellation:true, noiseSuppression:true, autoGainControl:true}, video:false});
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) throw new Error('当前浏览器不支持电脑音频采集');
+        const context = new AudioContextClass();
+        await context.resume();
+        const source = context.createMediaStreamSource(stream);
+        const processor = context.createScriptProcessor(4096, 1, 1);
+        const silentGain = context.createGain();
+        silentGain.gain.value = 0;
+        const token = ++voiceCaptureToken;
+        const startedAt = Date.now();
+        const session = {stream, context, source, processor, silentGain, token, startedAt, chunks:[], noiseFloor:0.004, noiseSamples:0, sawVoice:false, voiceStartedAt:0, lastVoiceAt:0};
+        computerSpeech = session;
+        processor.onaudioprocess = event => {
+          if (computerSpeech !== session || !speechListening) return;
+          const samples = new Float32Array(event.inputBuffer.getChannelData(0));
+          session.chunks.push(samples);
+          let sumSquares = 0;
+          for (let i = 0; i < samples.length; i += 1) sumSquares += samples[i] * samples[i];
+          const rms = Math.sqrt(sumSquares / Math.max(1, samples.length));
+          setVoiceLevel(rms);
+          const now = Date.now();
+          if (now - startedAt < 450) {
+            session.noiseSamples += 1;
+            session.noiseFloor += (rms - session.noiseFloor) / session.noiseSamples;
+          }
+          if (rms > Math.max(0.009, session.noiseFloor * 2.8)) {
+            if (!session.sawVoice) session.voiceStartedAt = now;
+            session.sawVoice = true;
+            session.lastVoiceAt = now;
+          }
+          if (session.sawVoice && now - session.voiceStartedAt >= 350 && now - session.lastVoiceAt >= 1100) finishComputerSpeech();
+        };
+        source.connect(processor); processor.connect(silentGain); silentGain.connect(context.destination);
+        speechListening = true; speechDeadline = Date.now() + 15000;
+        updateSpeechCountdown(); speechCountdownTimer = setInterval(updateSpeechCountdown, 250);
+        speechStopTimer = setTimeout(finishComputerSpeech, 15000);
+        toast('电脑麦克风已经开始收音，请直接说话');
+      } catch (error) {
+        if (stream) stream.getTracks().forEach(track => track.stop());
+        stopSpeech();
+        const denied = error && (error.name === 'NotAllowedError' || error.name === 'SecurityError');
+        const message = denied ? '电脑麦克风没有授权，请在 Chrome 中允许麦克风' : (error.message || '电脑麦克风启动失败');
+        setVoiceHint(`${message}，也可以直接输入文字。`);
+        toast(message, true);
+      }
+    }
+    async function finishComputerSpeech() {
+      if (!computerSpeech || computerSpeechStopping) return;
+      computerSpeechStopping = true; speechListening = false;
+      clearInterval(speechCountdownTimer); clearTimeout(speechStopTimer);
+      speechCountdownTimer = null; speechStopTimer = null;
+      const session = releaseComputerSpeech();
+      setVoiceHint('录音完成，正在本机转换成文字…');
+      try {
+        const pcm = pcm16Buffer(session.chunks);
+        const result = await api(`/api/voice/computer/transcribe?sample_rate=${Math.round(session.context.sampleRate)}`, {method:'POST', headers:{'Content-Type':'application/octet-stream'}, body:pcm});
+        if (session.token !== voiceCaptureToken) return;
+        const transcript = (result.transcript || '').trim();
+        await applyRecognizedTranscript(transcript, result.requires_confirmation === true);
+      } catch (error) {
+        if (session.token === voiceCaptureToken) {
+          setVoiceHint('电脑语音没有识别成功，可以直接输入，或取消后重新录入。');
+          document.querySelector('#voice-error').textContent = friendlyError(error.message);
+          toast(error.message, true);
+        }
+      } finally { computerSpeechStopping = false; }
+    }
+    async function startKeyboardSpeech() {
+      stopSpeech();
+      try {
+        await api('/api/voice/keyboard/start', {method:'POST'});
+        keyboardSpeech = true; speechListening = true; speechDeadline = Date.now() + 15000;
+        updateSpeechCountdown(); speechCountdownTimer = setInterval(updateSpeechCountdown, 250);
+        speechStopTimer = setTimeout(finishKeyboardSpeech, 15000);
+        const stopKey = currentState?.pending_voice === 'bottle' ? 'K3' : 'K4';
+        setVoiceHint(`正在使用 EasyInput 麦克风；说完再按一次 ${stopKey}，立即识别。`);
+        toast(`请直接说话，说完再按一次 ${stopKey}`);
+      } catch (error) {
+        toast(error.message, true);
+        if (!error.message.includes('already capturing')) startComputerSpeech();
+      }
+    }
+    async function finishKeyboardSpeech() {
+      if (!keyboardSpeech || keyboardSpeechStopping) return;
+      keyboardSpeechStopping = true; keyboardSpeech = false; speechListening = false;
+      clearInterval(speechCountdownTimer); clearTimeout(speechStopTimer);
+      speechCountdownTimer = null; speechStopTimer = null;
+      setVoiceHint('录音完成，正在使用千问 ASR 转成文字…');
+      try {
+        const result = await api('/api/voice/keyboard/stop', {method:'POST'});
+        const transcript = (result.transcript || '').trim();
+        await applyRecognizedTranscript(transcript, result.requires_confirmation === true);
+      } catch (error) {
+        setVoiceHint('键盘语音没有识别成功；可按 K7 取消后重试，或直接输入。');
+        document.querySelector('#voice-error').textContent = friendlyError(error.message);
+      }
+      finally { keyboardSpeechStopping = false; }
+    }
+    async function startSpeech() {
+      if (currentState?.audio?.listening && currentState.audio.device_discovered && currentState.audio.audio_ready) {
+        await startKeyboardSpeech();
+        return;
+      }
+      await startComputerSpeech();
+    }
+    async function applyRecognizedTranscript(transcript, requiresConfirmation = false) {
+      const input = document.querySelector('#transcript');
+      input.value = transcript;
+      updateVoiceActions();
+      if (!transcript) return;
+      try {
+        const result = await api('/api/voice/transcript', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({transcript})});
+        if (input.value.trim() !== transcript) return;
+        const data = result.draft.data;
+        input.value = result.draft.context === 'bottle' ? `${data.amount_ml} 毫升` : data.description;
+        if (result.draft.context === 'solid_food' && requiresConfirmation) {
+          setVoiceHint(`已识别：${input.value}。录音质量或识别把握不足，请确认或修改；尚未保存。`);
+          updateVoiceActions();
+          return;
+        }
+        setVoiceHint(`已识别：${input.value}，正在自动保存…`);
+        updateVoiceActions();
+        await confirmVoice();
+      } catch (error) {
+        document.querySelector('#voice-error').textContent = friendlyError(error.message);
+      }
+    }
+    async function confirmVoice() {
+      const transcript = document.querySelector('#transcript').value.trim();
+      if (!transcript) return toast('请说出或输入要记录的内容', true);
+      if (voiceConfirmBusy) return;
+      stopSpeech(); voiceConfirmBusy = true; updateVoiceActions();
+      try {
+        const result = await api('/api/voice/confirm', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({transcript})});
+        toast(actionMessage(result), result.sync_status === 'failed');
+        if (currentState) currentState.pending_voice = null;
+        resetVoice();
+        await refresh();
+      } catch (error) {
+        const input = document.querySelector('#transcript');
+        if (input.value.trim() === transcript) document.querySelector('#voice-error').textContent = friendlyError(error.message);
+      }
+      finally { voiceConfirmBusy = false; updateVoiceActions(); }
+    }
+    async function cancelVoice() { try { await api('/api/voice/cancel', {method:'POST'}); if (currentState) currentState.pending_voice = null; resetVoice(); await refresh(); toast('已经取消语音录入'); } catch (error) { toast(error.message, true); } }
+    function resetVoice() { stopSpeech(true); document.querySelector('#transcript').value=''; document.querySelector('#voice-status').textContent=''; document.querySelector('#voice-error').textContent=''; const dialog = document.querySelector('#voice-dialog'); if (dialog.open) dialog.close(); updateVoiceActions(); }
+    async function retry(recordId) { try { const result = await api(`/api/operations/${recordId}/retry`, {method:'POST'}); toast(result.sync_status === 'synced' ? '重新同步成功' : (result.sync_error || '重新同步没有完成'), result.sync_status !== 'synced' && result.sync_status !== 'undone'); await refresh(); } catch (error) { toast(error.message, true); } }
+    async function checkBabyBuddy() { try { bbStatus = await api('/api/babybuddy/check'); } catch (error) { bbStatus = {configured:true, connected:false, error:error.message}; } }
+    function isMatchingVoiceKey(key) {
+      if (!currentState?.pending_voice) return false;
+      return (key === 3 && currentState.pending_voice === 'bottle') ||
+        (key === 4 && currentState.pending_voice === 'solid_food');
+    }
+    function isVoiceStopKey(key) { return speechListening && isMatchingVoiceKey(key); }
+    function handlePhysicalKey(key) {
+      if (voicePromptPending && isMatchingVoiceKey(key)) {
+        toast('提示音正在播放，播完后再说话');
+        return;
+      }
+      if (isVoiceStopKey(key)) {
+        finishSpeechWindow();
+        return;
+      }
+      if (key === 7 && currentState?.pending_voice) {
+        cancelVoice();
+        return;
+      }
+      press(key);
+    }
+    async function initEasyInput() {
+      try {
+        const manifest = await api('/api/device/manifest');
+        webHid = new BabyTapEasyInput(manifest, {onKey: key => handlePhysicalKey(key)});
+        await webHid.connectGranted();
+      } catch (_) { /* 蓝牙数字快捷键仍可通过 keydown 路径使用。 */ }
+    }
+    function installBluetoothShortcuts() {
+      window.addEventListener('keydown', event => {
+        if (event.repeat || event.metaKey || event.ctrlKey || event.altKey) return;
+        const match = /^(?:Digit|Numpad)([1-8])$/.exec(event.code);
+        if (!match) return;
+        const key = Number(match[1]);
+        const target = event.target;
+        const editing = target && (target.matches('input, textarea, select') || target.isContentEditable);
+        if (editing && !isMatchingVoiceKey(key) && !(key === 7 && currentState?.pending_voice)) return;
+        event.preventDefault();
+        handlePhysicalKey(key);
+      });
+    }
+    installBluetoothShortcuts();
+    document.querySelector('#voice-dialog').addEventListener('cancel', event => { event.preventDefault(); cancelVoice(); });
+    initEasyInput(); checkBabyBuddy().then(refresh); setInterval(renderLiveState, 1000); setInterval(refresh, 3000); setInterval(() => checkBabyBuddy().then(refresh), 30000);
+  </script>
+</body>
+</html>

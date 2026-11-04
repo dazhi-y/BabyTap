@@ -1,0 +1,13 @@
+{% extends "error/base.html" %}
+{% load i18n %}
+{% block title %}
+    404 {% trans "Page Not Found" %}
+{% endblock %}
+{% block content %}
+    <h1>404 {% trans "Page Not Found" %}</h1>
+    <div>
+        {% blocktrans trimmed with path="<code>"|add:request_path|add:"</code>"|safe %}
+            The path {{ path }} does not exist.
+        {% endblocktrans %}
+    </div>
+{% endblock %}

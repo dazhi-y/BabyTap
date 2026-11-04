@@ -1,0 +1,57 @@
+{
+  "name": "babybuddy",
+  "type": "module",
+  "version": "",
+  "license": "BSD-2-Clause",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/babybuddy/babybuddy.git"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "^24.0.0",
+      "onFail": "error"
+    },
+    "packageManager": {
+      "name": "npm",
+      "version": "^11.0.0",
+      "onFail": "error"
+    }
+  },
+  "devDependencies": {
+    "@popperjs/core": "^2.11.8",
+    "bootstrap": "^5.3.8",
+    "del": "^8.0.1",
+    "gulp": "^5.0.1",
+    "gulp-all": "^1.1.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-csso": "^4.0.1",
+    "gulp-flatten": "^0.4.0",
+    "gulp-fontello": "^0.5.2",
+    "gulp-minify": "^3.1.0",
+    "gulp-sass": "^6.0.1",
+    "gulp-sass-glob": "^1.1.0",
+    "gulp-spawn": "^2.0.0",
+    "gulp-stylelint-esm": "^4.0.0",
+    "gulp-uglify": "^3.0.2",
+    "jquery": "^3.7.1",
+    "lefthook": "^2.1.12",
+    "masonry-layout": "^4.2.2",
+    "npm-force-resolutions": "^0.0.10",
+    "plotly.js": "^4.1.0",
+    "prettier": "3.9.6",
+    "pulltorefreshjs": "^0.1.22",
+    "pump": "^3.0.4",
+    "sass": "^1.104.1",
+    "stylelint": "^17.15.0",
+    "stylelint-config-recommended-scss": "^17.0.1",
+    "stylelint-order": "^8.1.1",
+    "stylelint-scss": "^7.2.0"
+  },
+  "allowScripts": {
+    "es5-ext": false,
+    "@parcel/watcher@2.5.6": true,
+    "lefthook@2.1.12": true
+  }
+}
